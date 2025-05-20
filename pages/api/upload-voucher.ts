@@ -9,27 +9,23 @@ export const config = {
   },
 };
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+// ⚠️ Token directo (NO recomendado en producción)
+const octokit = new Octokit({
+  auth: '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',
+});
 
 function getFirstValue<T>(value: T | T[] | undefined): T | undefined {
-  if (Array.isArray(value)) {
-    return value[0];
-  }
-  return value;
+  return Array.isArray(value) ? value[0] : value;
 }
 
 function getSingleFile(file: File | File[] | undefined): File | undefined {
-  if (Array.isArray(file)) {
-    return file[0];
-  }
-  return file;
+  return Array.isArray(file) ? file[0] : file;
 }
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Log del método recibido
   console.log('Método recibido:', req.method);
 
   if (req.method !== 'POST') {
@@ -37,7 +33,7 @@ export default async function handler(
   }
 
   const form = new IncomingForm();
-  
+
   try {
     const [fields, files] = await new Promise<[Fields, Files]>((resolve, reject) => {
       form.parse(req, (err: Error | null, fields: Fields, files: Files) => {
@@ -46,11 +42,6 @@ export default async function handler(
       });
     });
 
-    // LOG: Mostrar qué llega en fields y files
-    console.log('Fields recibidos:', fields);
-    console.log('Files recibidos:', files);
-
-    // Obtener y validar los campos
     const numeroFactura = getFirstValue(fields.numeroFactura);
     const nombreUsuario = getFirstValue(fields.nombreUsuario);
     const voucherFile = getSingleFile(files.voucher);
@@ -59,43 +50,54 @@ export default async function handler(
       return res.status(400).json({ error: 'Faltan datos requeridos' });
     }
 
-    // Validar que sea una imagen
     if (!voucherFile.mimetype?.startsWith('image/')) {
       return res.status(400).json({ error: 'Solo se permiten imágenes' });
     }
 
-    // Leer el archivo y convertirlo a base64
     const fs = await import('fs/promises');
     const buffer = await fs.readFile(voucherFile.filepath);
     const content = buffer.toString('base64');
 
-    // Nombre del archivo
     const nombreLimpio = String(nombreUsuario).replace(/[^a-zA-Z0-9]/g, '_');
     const filename = `FACTURA_${numeroFactura}_${nombreLimpio}.PNG`;
 
-    // Subir a GitHub
+    // Verificar si ya existe el archivo para obtener el SHA (para sobreescritura segura)
+    let sha: string | undefined = undefined;
     try {
-      await octokit.repos.createOrUpdateFileContents({
+      const { data } = await octokit.repos.getContent({
         owner: 'Elmerluis0129',
         repo: 'WanMarKay',
         path: `src/assest/vouchers/${filename}`,
-        message: `Subir voucher ${filename}`,
-        content,
-        branch: process.env.GITHUB_BRANCH || 'main',
+        ref: 'main',
       });
-      return res.status(200).json({ success: true, filename });
-    } catch (e) {
-      console.error('Error al subir a GitHub:', e);
-      return res.status(500).json({ 
-        error: 'Error al subir a GitHub', 
-        details: e instanceof Error ? e.message : 'Error desconocido' 
-      });
+
+      if (!Array.isArray(data) && data.sha) {
+        sha = data.sha;
+      }
+    } catch (err: any) {
+      if (err.status !== 404) {
+        return res.status(500).json({ error: 'Error verificando existencia del archivo', details: err.message });
+      }
+      // si es 404, continúa creando el archivo sin SHA
     }
-  } catch (error) {
-    console.error('Error al procesar la solicitud:', error);
-    return res.status(500).json({ 
-      error: 'Error al procesar la solicitud',
-      details: error instanceof Error ? error.message : 'Error desconocido'
+
+    await octokit.repos.createOrUpdateFileContents({
+      owner: 'Elmerluis0129',
+      repo: 'WanMarKay',
+      path: `src/assest/vouchers/${filename}`,
+      message: `Subir voucher ${filename}`,
+      content,
+      branch: 'main',
+      ...(sha && { sha }), // solo incluir si existe
+    });
+
+    return res.status(200).json({ success: true, filename });
+
+  } catch (error: any) {
+    console.error('Error al procesar/subir archivo:', error.message);
+    return res.status(500).json({
+      error: 'Error al procesar o subir el archivo',
+      details: error.message || 'Error desconocido',
     });
   }
-} 
+}
