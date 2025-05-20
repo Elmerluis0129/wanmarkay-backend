@@ -8,6 +8,7 @@ export const config = {
     bodyParser: false,
   },
 };
+console.log("GITHUB_TOKEN:", process.env.GITHUB_TOKEN ? '🟢 Presente' : '🔴 Ausente');
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
