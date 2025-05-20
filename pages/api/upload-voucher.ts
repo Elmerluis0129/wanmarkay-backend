@@ -9,10 +9,10 @@ export const config = {
   },
 };
 
-// ⚠️ Token directo (NO recomendado en producción)
 const octokit = new Octokit({
-  auth: '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',
+  auth: process.env.GITHUB_TOKEN,
 });
+
 
 function getFirstValue<T>(value: T | T[] | undefined): T | undefined {
   return Array.isArray(value) ? value[0] : value;
