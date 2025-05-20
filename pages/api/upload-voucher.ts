@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import type { Fields, Files, File } from 'formidable';
 import { Octokit } from '@octokit/rest';
 
@@ -11,7 +11,6 @@ export const config = {
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-// Función auxiliar para obtener el primer valor de un campo
 function getFirstValue<T>(value: T | T[] | undefined): T | undefined {
   if (Array.isArray(value)) {
     return value[0];
@@ -19,10 +18,9 @@ function getFirstValue<T>(value: T | T[] | undefined): T | undefined {
   return value;
 }
 
-// Función auxiliar para validar que el archivo sea un único archivo
 function getSingleFile(file: File | File[] | undefined): File | undefined {
-  if (!file || Array.isArray(file)) {
-    return undefined;
+  if (Array.isArray(file)) {
+    return file[0];
   }
   return file;
 }
@@ -31,11 +29,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Log del método recibido
+  console.log('Método recibido:', req.method);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const form = new formidable.IncomingForm();
+  const form = new IncomingForm();
   
   try {
     const [fields, files] = await new Promise<[Fields, Files]>((resolve, reject) => {
@@ -44,6 +45,10 @@ export default async function handler(
         resolve([fields, files]);
       });
     });
+
+    // LOG: Mostrar qué llega en fields y files
+    console.log('Fields recibidos:', fields);
+    console.log('Files recibidos:', files);
 
     // Obtener y validar los campos
     const numeroFactura = getFirstValue(fields.numeroFactura);
@@ -73,7 +78,7 @@ export default async function handler(
       await octokit.repos.createOrUpdateFileContents({
         owner: 'Elmerluis0129',
         repo: 'WanMarKay',
-        path: `src/assets/vouchers/${filename}`,
+        path: `src/assest/vouchers/${filename}`,
         message: `Subir voucher ${filename}`,
         content,
         branch: process.env.GITHUB_BRANCH || 'main',
