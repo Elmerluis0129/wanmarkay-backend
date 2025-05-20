@@ -59,8 +59,11 @@ export default async function handler(
     const buffer = await fs.readFile(voucherFile.filepath);
     const content = buffer.toString('base64');
 
+    // Nombre del archivo
     const nombreLimpio = String(nombreUsuario).replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `FACTURA_${numeroFactura}_${nombreLimpio}.PNG`;
+    const fecha = new Date();
+    const timestamp = fecha.toISOString().slice(0, 16).replace(/[-T:]/g, '').replace(/^(\d{8})(\d{4})$/, '$1_$2'); // YYYYMMDD_HHmm
+    const filename = `FACTURA_${numeroFactura}_${nombreLimpio}_${timestamp}.PNG`;
 
     // Verificar si ya existe el archivo para obtener el SHA (para sobreescritura segura)
     let sha: string | undefined = undefined;
