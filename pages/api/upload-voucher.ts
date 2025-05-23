@@ -27,6 +27,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Soporte CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
   console.log('Método recibido:', req.method);
 
   if (req.method !== 'POST') {
@@ -45,6 +53,9 @@ export default async function handler(
 
     const numeroFactura = getFirstValue(fields.numeroFactura);
     const nombreUsuario = getFirstValue(fields.nombreUsuario);
+    const banco = getFirstValue(fields.banco);
+    console.log('DEBUG fields:', fields);
+    console.log('DEBUG banco recibido:', banco);
     const voucherFile = getSingleFile(files.voucher);
 
     if (!numeroFactura || !nombreUsuario || !voucherFile) {
@@ -61,9 +72,12 @@ export default async function handler(
 
     // Nombre del archivo
     const nombreLimpio = String(nombreUsuario).replace(/[^a-zA-Z0-9]/g, '_');
+    const bancoLimpio = String(banco || 'Banco').replace(/[^a-zA-Z0-9]/g, '');
     const fecha = new Date();
     const timestamp = fecha.toISOString().slice(0, 16).replace(/[-T:]/g, '').replace(/^(\d{8})(\d{4})$/, '$1_$2'); // YYYYMMDD_HHmm
-    const filename = `FACTURA_${numeroFactura}_${nombreLimpio}_${timestamp}.PNG`;
+    const fileExt = voucherFile.originalFilename?.split('.').pop() || 'png';
+    const baseName = `FACTURA_${numeroFactura}_${nombreLimpio}_${timestamp}`;
+    const filename = `${baseName}_${bancoLimpio}.${fileExt}`;
 
     // Verificar si ya existe el archivo para obtener el SHA (para sobreescritura segura)
     let sha: string | undefined = undefined;

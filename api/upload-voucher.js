@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   form.parse(req, async (err, fields, files) => {
     if (err) return res.status(400).json({ error: 'Error al procesar el formulario' });
 
-    const { numeroFactura, nombreUsuario } = fields;
+    const { numeroFactura, nombreUsuario, banco } = fields;
     const file = files.voucher;
 
     if (!numeroFactura || !nombreUsuario || !file) {
@@ -35,12 +35,14 @@ export default async function handler(req, res) {
     const buffer = await fs.readFile(file.filepath);
     const content = buffer.toString('base64');
 
-    // Nombre del archivo
+    // Construir nombre de archivo con banco recibido
     const nombreLimpio = String(nombreUsuario).replace(/[^a-zA-Z0-9]/g, '_');
+    const bancoLimpio = String(banco || 'Banco').replace(/[^a-zA-Z0-9]/g, '');
     const fecha = new Date();
-    const timestamp = fecha.toISOString().slice(0, 16).replace(/[-T:]/g, '').replace(/^(\d{8})(\d{4})$/, '$1_$2'); // YYYYMMDD_HHmm
-    const filename = `FACTURA_${numeroFactura}_${nombreLimpio}_${timestamp}.PNG`;
-
+    const timestamp = fecha.toISOString().slice(0, 16).replace(/[-T:]/g, '').replace(/^(\d{8})(\d{4})$/, '$1_$2');
+    const fileExt = file.originalFilename?.split('.').pop() || 'png';
+    const baseName = `FACTURA_${numeroFactura}_${nombreLimpio}_${timestamp}`;
+    const filename = `${baseName}_${bancoLimpio}.${fileExt}`;
 
     // Subir a GitHub
     try {
