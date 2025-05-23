@@ -55,6 +55,7 @@ export default async function handler(
     const nombreUsuario = getFirstValue(fields.nombreUsuario);
     const banco = getFirstValue(fields.banco);
     console.log('DEBUG fields:', fields);
+    console.log('DEBUG typeof fields.banco:', typeof fields.banco, 'valor:', fields.banco);
     console.log('DEBUG banco recibido:', banco);
     const voucherFile = getSingleFile(files.voucher);
 
