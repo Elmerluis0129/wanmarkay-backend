@@ -53,7 +53,11 @@ export default async function handler(
 
     const numeroFactura = getFirstValue(fields.numeroFactura);
     const nombreUsuario = getFirstValue(fields.nombreUsuario);
-    const banco = getFirstValue(fields.banco);
+    let banco = getFirstValue(fields.banco);
+    // Normalización especial: quitar 'León' de 'Banco BHD León'
+    if (banco && banco.toLowerCase().includes('bhd le')) {
+      banco = 'Banco BHD';
+    }
     console.log('DEBUG fields:', fields);
     console.log('DEBUG typeof fields.banco:', typeof fields.banco, 'valor:', fields.banco);
     console.log('DEBUG banco recibido:', banco);
