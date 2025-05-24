@@ -78,8 +78,16 @@ export default async function handler(
     // Nombre del archivo
     const nombreLimpio = String(nombreUsuario).replace(/[^a-zA-Z0-9]/g, '_');
     const bancoLimpio = String(banco || 'Banco').replace(/[^a-zA-Z0-9]/g, '');
+    // Obtener fecha y hora en zona horaria de República Dominicana (AST, UTC-4)
     const fecha = new Date();
-    const timestamp = fecha.toISOString().slice(0, 16).replace(/[-T:]/g, '').replace(/^(\d{8})(\d{4})$/, '$1_$2'); // YYYYMMDD_HHmm
+    // Usar date-fns-tz para obtener la hora exacta de República Dominicana
+    const { utcToZonedTime, format } = require('date-fns-tz');
+    console.log('DEBUG fecha local:', fecha.toString());
+    console.log('DEBUG fecha UTC:', fecha.toISOString());
+    const zonedDate = utcToZonedTime(fecha, 'America/Santo_Domingo');
+    console.log('DEBUG zonedDate:', zonedDate.toString());
+    const timestamp = format(zonedDate, 'yyyyMMdd_HHmm'); // YYYYMMDD_HHmm
+    console.log('DEBUG timestamp generado:', timestamp);
     const fileExt = voucherFile.originalFilename?.split('.').pop() || 'png';
     const baseName = `FACTURA_${numeroFactura}_${nombreLimpio}_${timestamp}`;
     const filename = `${baseName}_${bancoLimpio}.${fileExt}`;
