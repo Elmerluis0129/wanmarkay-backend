@@ -1,13 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Octokit } from '@octokit/rest';
 
-// Para pruebas locales, usar el token directamente. Para producción, usar process.env.GITHUB_TOKEN
-const GITHUB_TOKEN = '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';
 const GITHUB_OWNER = 'Elmerluis0129';
 const GITHUB_REPO = 'WanMarKay';
 const VOUCHERS_PATH = 'src/assest/vouchers';
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 // Utilidad para extraer datos del nombre del archivo
 function parseVoucherFilename(filename: string) {
