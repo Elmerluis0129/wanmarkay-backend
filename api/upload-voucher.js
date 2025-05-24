@@ -58,4 +58,3 @@ export const config = {
       return res.status(500).json({ error: 'Error al subir a GitHub', details: e.message });
     }
   });
-} 
