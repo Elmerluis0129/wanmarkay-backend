@@ -14,7 +14,7 @@ import { Octokit } from '@octokit/rest';
 
 const GITHUB_OWNER = 'Elmerluis0129';
 const GITHUB_REPO = 'WanMarKay';
-const VOUCHERS_PATH = 'src/assest/vouchers';
+const VOUCHERS_PATH = 'src/assets/vouchers';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 

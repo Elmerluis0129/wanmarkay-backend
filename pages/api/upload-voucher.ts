@@ -102,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data } = await octokit.repos.getContent({
         owner: 'Elmerluis0129',
         repo: 'WanMarKay',
-        path: `src/assest/vouchers/${filename}`,
+        path: `src/assets/vouchers/${filename}`,
         ref: 'main',
       });
 
@@ -119,7 +119,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await octokit.repos.createOrUpdateFileContents({
       owner: 'Elmerluis0129',
       repo: 'WanMarKay',
-      path: `src/assest/vouchers/${filename}`,
+      path: `src/assets/vouchers/${filename}`,
       message: `Subir voucher ${filename}`,
       content,
       branch: 'main',
