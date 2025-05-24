@@ -7,9 +7,7 @@ export const config = {
   },
 };
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
