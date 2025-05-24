@@ -1,4 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+
+function cors(req: NextApiRequest, res: NextApiResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return true;
+  }
+  return false;
+}
 import { Octokit } from '@octokit/rest';
 
 const GITHUB_OWNER = 'Elmerluis0129';
@@ -26,6 +37,7 @@ function parseVoucherFilename(filename: string) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (cors(req, res)) return;
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Método no permitido' });
   }

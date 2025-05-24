@@ -1,19 +1,30 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { IncomingForm } from 'formidable';
 import type { Fields, Files, File } from 'formidable';
 import { Octokit } from '@octokit/rest';
+
+function cors(req: NextApiRequest, res: NextApiResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return true;
+  }
+  return false;
+}
 
 export const config = {
   api: {
     bodyParser: false,
   },
 };
+
 console.log("GITHUB_TOKEN:", process.env.GITHUB_TOKEN ? '🟢 Presente' : '🔴 Ausente');
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
-
 
 function getFirstValue<T>(value: T | T[] | undefined): T | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -23,27 +34,14 @@ function getSingleFile(file: File | File[] | undefined): File | undefined {
   return Array.isArray(file) ? file[0] : file;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  // Soporte CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method?.toUpperCase() === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (cors(req, res)) return;
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
   console.log('Método recibido:', req.method);
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
-  }
 
   const form = new IncomingForm();
 
