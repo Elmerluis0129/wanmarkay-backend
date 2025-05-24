@@ -84,11 +84,13 @@ export default async function handler(
     const bancoLimpio = String(banco || 'Banco').replace(/[^a-zA-Z0-9]/g, '');
     // Obtener fecha y hora en zona horaria de República Dominicana (AST, UTC-4)
     const fecha = new Date();
-    // Usar date-fns-tz para obtener la hora exacta de República Dominicana
-    const { utcToZonedTime, format } = require('date-fns-tz');
+    // Usar date-fns-tz para obtener la hora exacta de República Dominicana (compatibilidad ESM/CJS)
+    const dateFnsTz = await import('date-fns-tz');
+    const toZonedTime = dateFnsTz.default ? dateFnsTz.default.toZonedTime : dateFnsTz.toZonedTime;
+    const format = dateFnsTz.default ? dateFnsTz.default.format : dateFnsTz.format;
     console.log('DEBUG fecha local:', fecha.toString());
     console.log('DEBUG fecha UTC:', fecha.toISOString());
-    const zonedDate = utcToZonedTime(fecha, 'America/Santo_Domingo');
+    const zonedDate = toZonedTime(fecha, 'America/Santo_Domingo');
     console.log('DEBUG zonedDate:', zonedDate.toString());
     const timestamp = format(zonedDate, 'yyyyMMdd_HHmm'); // YYYYMMDD_HHmm
     console.log('DEBUG timestamp generado:', timestamp);
