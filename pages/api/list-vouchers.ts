@@ -29,7 +29,7 @@ function parseVoucherFilename(filename: string) {
     userName: match[2].replace(/_/g, ' '),
     date: match[3],
     time: match[4],
-    bank: match[5],
+    bank: match[5].replace(/^(Banco|Asociación)\s*/i, ''),
     ext: match[6],
     filename,
     url: `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/main/${VOUCHERS_PATH}/${filename}?raw=true`,
