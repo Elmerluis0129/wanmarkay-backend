@@ -22,13 +22,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   form.parse(req, async (err, fields, files) => {
     if (err) return res.status(400).json({ error: 'Error al procesar el formulario' });
 
-    let file = files.file;
+    const fileField = files.file;
+    const file = Array.isArray(fileField) ? fileField[0] : fileField;
     if (!file) {
       return res.status(400).json({ error: 'Falta el archivo PDF' });
-    }
-    // Si formidable entrega un array, tomamos el primer archivo
-    if (Array.isArray(file)) {
-      file = file[0];
     }
     // Solo aceptar PDFs
     if (!file.mimetype || !file.mimetype.includes('pdf')) {
