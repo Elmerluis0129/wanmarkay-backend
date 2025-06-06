@@ -7,6 +7,14 @@ const GITHUB_REPO = 'WanMarKay';
 const CATALOGOS_PATH = 'src/assets/catalogos';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Puedes restringir a tu dominio en producción
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
